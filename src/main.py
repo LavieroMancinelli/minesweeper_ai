@@ -3,7 +3,7 @@ import numpy as np
 import constants
 from env import Env
 from renderer import Renderer
-from constants import BOARD_SIZE, CELL_SIZE, MARGIN, HEADER_HEIGHT, COLOR_HIDDEN
+from constants import BOARD_SIZE
 
 
 def run(mode="human", agent=None, fps=10):

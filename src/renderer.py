@@ -1,6 +1,6 @@
 import pygame
 from env import Env
-from constants import BOARD_SIZE, CELL_SIZE, MARGIN, HEADER_HEIGHT, COLOR_HIDDEN
+from constants import BOARD_SIZE, CELL_SIZE, MARGIN, HEADER_HEIGHT, COLOR_HIDDEN, COLOR_FLAG, COLOR_MINE, COLOR_NUMBER, HIDDEN, FLAGGED, MINE_HIT
 
 class Renderer:
     def __init__(self, env: Env):
@@ -32,15 +32,31 @@ class Renderer:
 
     def draw(self):
         env = self.env
+        obs = env.get_obs()
 
-        for r in range(env.rows):
-            for c in range(env.cols):
-                rect = self.cell_rect(r,c)
-                pygame.draw.rect(self.screen, COLOR_HIDDEN, rect)
-                pygame.draw.line(self.screen, (210,210,210), rect.topleft, rect.topright)
-                pygame.draw.line(self.screen, (210,210,210), rect.topleft, rect.bottomleft)
-                pygame.draw.line(self.screen, (130,130,130), rect.bottomleft, rect.bottomright)
-                pygame.draw.line(self.screen, (130,130,130), rect.topright, rect.bottomright)
+        for row in range(env.rows):
+            for col in range(env.cols):
+                rect = self.cell_rect(row,col)
+                val = obs[row,col]
+
+                if val == HIDDEN:
+                    pygame.draw.rect(self.screen, COLOR_HIDDEN, rect)
+                    pygame.draw.line(self.screen, (210,210,210), rect.topleft, rect.topright)
+                    pygame.draw.line(self.screen, (210,210,210), rect.topleft, rect.bottomleft)
+                    pygame.draw.line(self.screen, (130,130,130), rect.bottomleft, rect.bottomright)
+                    pygame.draw.line(self.screen, (130,130,130), rect.topright, rect.bottomright)
+                elif val == FLAGGED:
+                    pygame.draw.rect(self.screen, COLOR_HIDDEN, rect)
+                    flag = self.font.render("F", True, COLOR_FLAG, None)
+                    self.screen.blit(flag, flag.get_rect(center=rect.center))
+                elif val == MINE_HIT:
+                    pygame.draw.rect(self.screen, COLOR_HIDDEN, rect)
+                    flag = self.font.render("M", True, COLOR_FLAG, None)
+                    self.screen.blit(flag, flag.get_rect(center=rect.center))
+                else: # revealed safe
+                    pygame.draw.rect(self.screen, COLOR_REVEALED, rect)
+                    num = self.font.render(val, True, COLOR_NUMBER, None)
+                    self.screen.blit(flag, flag.get_rect(center=rect.center))
 
         pygame.display.flip()
 

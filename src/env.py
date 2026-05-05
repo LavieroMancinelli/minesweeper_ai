@@ -1,5 +1,5 @@
 import numpy as np
-from constants import BOARD_SIZE, CELL_SIZE, MARGIN, HEADER_HEIGHT, COLOR_HIDDEN
+from constants import BOARD_SIZE, CELL_SIZE, MARGIN, HEADER_HEIGHT, HIDDEN, FLAGGED, MINE_HIT
 
 class Env:
     def __init__(self, rows=BOARD_SIZE, cols=BOARD_SIZE, num_mines=5, seed=None):
@@ -33,28 +33,20 @@ class Env:
         mines_i = np.random.choice(len(mines_flat), self.num_mines, replace=False)
         mines_flat[mines_i] = True
         self.mine_grid = mines_flat.reshape(self.rows, self.cols)
-        self.adj_counts = self.compute_adjacency()
+        self.compute_adjacency()
     
     def compute_adjacency(self):
-        adj_counts = np.zeros((self.rows, self.cols), dtype=int)
         for i in range(self.rows):
             for j in range(self.cols):
-                adj_mines = 0
+                neighborhood = self.mine_grid[max(0, i-1):i+2, max(0, j-1):j+2]
+                self.adj_counts[i, j] = neighborhood.sum() - self.mine_grid[i, j]
 
-                if i-1 >= 0 and i-1 < self.rows and j-1 >= 0 and j-1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i-1, j-1]
-                if j-1 >= 0 and j-1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i, j-1]
-                if i+1 >= 0 and i+1 < self.rows and j-1 >= 0 and j-1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i+1, j-1]
-                if i-1 >= 0 and i-1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i-1, j]
-                self.adj_counts[i,j] += self.mine_grid[i, j]
-                if i+1 >= 0 and i+1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i+1, j]
-                if i-1 >= 0 and i-1 < self.rows and j+1 >= 0 and j+1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i-1, j+1]
-                if j+1 >= 0 and j+1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i, j+1]
-                if i+1 >= 0 and i+1 < self.rows and j+1 >= 0 and j+1 < self.rows:
-                    self.adj_counts[i,j] += self.mine_grid[i+1, j+1]
+    def get_obs(self):
+        obs = np.full((self.rows, self.cols), HIDDEN, dtype=int)
+        obs[self.revealed] = self.adj_counts[self.revealed]
+        obs[self.flagged & ~self.revealed] = FLAGGED
+
+        if self.game_over and not self.won:
+            obs[self.mine_grid & self.revealed] = MINE_HIT
+            
+        return obs

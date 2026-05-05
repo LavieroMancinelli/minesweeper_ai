@@ -49,4 +49,31 @@ class Env:
         if self.game_over and not self.won:
             obs[self.mine_grid & self.revealed] = MINE_HIT
             
-        return obs
+        return obs   
+    
+    def take_action(self, row, col, action="reveal"):
+        # actions are "reveal" and "flag"
+        if action == "flag":
+            if not self.revealed[row, col]:
+                self.flagged[row, col] = not self.flagged[row, col]
+            return
+        
+        # reveal on already revealed
+        if self.revealed[row,col]:
+            return
+
+        # reveal on mine
+        if self.mine_grid[row,col]:
+            self.revealed[row,col] = True
+            self.game_over = True
+            self.won = False
+            return
+
+        # reveal on safe
+        self.revealed[row,col] = True
+
+        if self.revealed.sum() >= self.rows * self.cols - self.num_mines:
+            self.revealed[row,col] = True
+            self.game_over = True
+            self.won = True
+            return

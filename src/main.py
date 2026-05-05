@@ -9,7 +9,22 @@ from constants import BOARD_SIZE
 def run(mode="human", agent=None, fps=10):
     env = Env(rows=BOARD_SIZE, cols=BOARD_SIZE, num_mines=5)
     renderer = Renderer(env)
-    renderer.draw()
+
+    running = True
+    while (running):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if mode == "human" and not env.game_over:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    cell = renderer.cell_at_pos(*event.pos)
+                    if cell is not None:
+                        row,col = cell
+                        action = "flag" if event.button == 3 else "reveal"
+                        env.take_action(row,col,action)
+                
+        renderer.draw()
+    renderer.close()
     
 if __name__ == "__main__":
     run()

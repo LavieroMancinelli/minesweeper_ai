@@ -4,9 +4,10 @@ import constants
 from env import Env
 from renderer import Renderer
 from constants import BOARD_SIZE
+from constraint_agent import constraint_step
 
 
-def run(mode="human", agent=None, fps=10):
+def run(mode="human", agent=None, fps=60):
     env = Env(rows=BOARD_SIZE, cols=BOARD_SIZE, num_mines=5)
     renderer = Renderer(env)
 
@@ -22,9 +23,12 @@ def run(mode="human", agent=None, fps=10):
                         row,col = cell
                         action = "flag" if event.button == 3 else "reveal"
                         env.take_action(row,col,action)
-                
+        if mode == "agent" and agent == "constraint" and not env.game_over:
+            constraint_step(env)
+
         renderer.draw()
+        renderer.clock.tick(fps)
     renderer.close()
     
 if __name__ == "__main__":
-    run()
+    run(mode="agent", agent="constraint")

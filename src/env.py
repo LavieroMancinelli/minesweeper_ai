@@ -27,10 +27,15 @@ class Env:
         self.won = False
         self.first_move = True
         self.place_mines()
+        self.revealed[self.rows // 2, self.cols // 2] = True
+        self.compute_adjacency
 
     def place_mines(self):
+        center = (self.rows // 2) * self.cols + (self.cols //2) # center cell never has mine
+        guar_safe = [center-self.cols-1, center-self.cols, center-self.cols+1, center-1, center, center+1, center+self.cols-1, center+self.cols, center+self.cols+1]
+        candidates = np.delete(np.arange(self.rows * self.cols), guar_safe)
+        mines_i = np.random.choice(candidates, self.num_mines, replace=False)
         mines_flat = np.zeros(self.rows * self.cols, dtype=bool)
-        mines_i = np.random.choice(len(mines_flat), self.num_mines, replace=False)
         mines_flat[mines_i] = True
         self.mine_grid = mines_flat.reshape(self.rows, self.cols)
         self.compute_adjacency()
@@ -52,6 +57,10 @@ class Env:
         return obs   
     
     def take_action(self, row, col, action="reveal"):
+        # invalid position
+        if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
+            return
+
         # actions are "reveal" and "flag"
         if action == "flag":
             if not self.revealed[row, col]:
@@ -71,6 +80,7 @@ class Env:
 
         # reveal on safe
         self.revealed[row,col] = True
+        self.compute_adjacency()
 
         if self.revealed.sum() >= self.rows * self.cols - self.num_mines:
             self.revealed[row,col] = True

@@ -5,6 +5,7 @@ from env import Env
 from renderer import Renderer
 from constants import BOARD_SIZE
 from constraint_agent import constraint_step
+from solver import solver_step
 
 
 def run(mode="human", agent=None, fps=60):
@@ -25,10 +26,12 @@ def run(mode="human", agent=None, fps=60):
                         env.take_action(row,col,action)
         if mode == "agent" and agent == "constraint" and not env.game_over:
             constraint_step(env)
+        if mode == "agent" and agent == "solver" and not env.game_over:
+            solver_step(env)
 
         renderer.draw()
         renderer.clock.tick(fps)
     renderer.close()
     
 if __name__ == "__main__":
-    run(mode="agent", agent="constraint")
+    run(mode="agent", agent="solver")

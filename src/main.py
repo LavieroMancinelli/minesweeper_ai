@@ -6,11 +6,13 @@ from renderer import Renderer
 from constants import BOARD_SIZE
 from constraint_agent import constraint_step
 from solver import solver_step
+from baseline_solver import BaselineSolver
 
 
 def run(mode="human", agent=None, fps=60):
     env = Env(rows=BOARD_SIZE, cols=BOARD_SIZE, num_mines=5)
     renderer = Renderer(env)
+    baseline = BaselineSolver() if agent == "baseline" else None
 
     running = True
     while (running):
@@ -28,6 +30,8 @@ def run(mode="human", agent=None, fps=60):
             constraint_step(env)
         if mode == "agent" and agent == "solver" and not env.game_over:
             solver_step(env)
+        if mode == "agent" and agent == "baseline" and not env.game_over and baseline:
+            baseline.runStep(env)
 
         renderer.draw()
         renderer.clock.tick(fps)

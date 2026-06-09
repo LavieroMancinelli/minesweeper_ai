@@ -4,7 +4,6 @@ import constants
 from env import Env
 from renderer import Renderer
 from constants import BOARD_SIZE
-from constraint_agent import constraint_step
 from solver import solver_step
 from baseline_solver import BaselineSolver
 
@@ -26,8 +25,6 @@ def run(mode="human", agent=None, fps=60):
                         row,col = cell
                         action = "flag" if event.button == 3 else "reveal"
                         env.take_action(row,col,action)
-        if mode == "agent" and agent == "constraint" and not env.game_over:
-            constraint_step(env)
         if mode == "agent" and agent == "solver" and not env.game_over:
             solver_step(env)
         if mode == "agent" and agent == "baseline" and not env.game_over and baseline:

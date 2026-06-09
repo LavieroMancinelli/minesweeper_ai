@@ -12,6 +12,7 @@ import sys
 import numpy as np
 from env import Env
 from solver import ConstraintSolver
+from baseline_solver import BaselineSolver
 
 # Difficulty presets. The proposal targets 9x9, 16x16, 30x16.
 # The current Env is square (uses rows/cols) and guarantees a 3x3 safe
@@ -25,20 +26,26 @@ DIFFICULTIES = {
 MAX_STEPS = 10000  # safety cap so a stuck game can't loop forever
 
 
-def play_one(cfg, seed):
+def play_one(cfg, seed, type="solver"):
     env = Env(rows=cfg["rows"], cols=cfg["cols"],
               num_mines=cfg["num_mines"], seed=seed)
-    solver = ConstraintSolver(env)
+    if type == "solver":
+        solver = ConstraintSolver(env)
+    else:
+        solver = BaselineSolver()
     steps = 0
     while not env.game_over and steps < MAX_STEPS:
-        progressed = solver.step()
+        if type == "solver":
+            progressed = solver.step()
+        else:  
+            progressed = solver.runStep(env)
         steps += 1
         if not progressed and not env.game_over:
             break
     return env.won, steps
 
 
-def evaluate(n_games=200):
+def evaluate(n_games=200, type="solver"):
     print(f"Evaluating constraint solver over {n_games} games per difficulty\n")
     print(f"{'difficulty':<14}{'win rate':>10}{'wins':>8}{'avg moves':>12}")
     print("-" * 44)
@@ -47,7 +54,7 @@ def evaluate(n_games=200):
         wins = 0
         total_moves = 0
         for g in range(n_games):
-            won, steps = play_one(cfg, seed=g)
+            won, steps = play_one(cfg, seed=g, type=type)
             wins += int(won)
             total_moves += steps
         rate = wins / n_games
@@ -61,4 +68,13 @@ def evaluate(n_games=200):
 
 if __name__ == "__main__":
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 200
-    evaluate(n)
+    solver = sys.argv[2] if len(sys.argv) > 2 else None
+    if not solver == None:
+        if solver == "baseline":
+            evaluate(n, "baseline")
+        elif solver == "solver":
+            evaluate(n, "solver")
+        else:
+            evaluate(n)
+    else:
+        evaluate(n)
